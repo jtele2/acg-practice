@@ -21,7 +21,7 @@ cd ../../../..
 zip pkg.zip lambda_function.py
 
 aws lambda update-function-code --function-name put-s3-j7irn \
-    --zip-file fileb:///home/ubuntu/acg-practice/kinesis/pkg.zip
+    --zip-file fileb://./pkg.zip
 
     
     

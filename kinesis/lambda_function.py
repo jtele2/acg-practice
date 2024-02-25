@@ -15,7 +15,7 @@ def lambda_handler(event, context):
 
     # Get i data records from randomuser.me
     i = 0
-    while i < 5:
+    while i < 1000:
         while True:
             random_user = requests.get("https://randomuser.me/api").json()["results"][0]
             username = f"{random_user['name']['first']} {random_user['name']['last']}"
