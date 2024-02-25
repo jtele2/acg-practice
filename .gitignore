@@ -1,5 +1,5 @@
 # Custom
-pkg.zip
+*.zip
 bucket-name.txt
 
 # Byte-compiled / optimized / DLL files
