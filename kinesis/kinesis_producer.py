@@ -7,6 +7,7 @@ TODO:
 import argparse
 import json
 import logging
+from time import sleep
 
 import boto3
 import requests
@@ -76,6 +77,7 @@ while i < tot:
             random_user["location"].get("coordinates") is not None
         ):
             i += 1
+            sleep(1)
             if not args.verbose:
                 progress.update(1)
             break
@@ -98,8 +100,14 @@ while i < tot:
     # test_data = {"name": "foo", "last_name": "bar"}
     # Data Firehose and Kinesis require binary
     test_data_enc = json.dumps(random_user_trim).encode()
-
-    response = client.put_record(
-        DeliveryStreamName=STREAM_NAME, Record={"Data": test_data_enc}
-    )
+    if args.data_firehose:
+        response = client.put_record(
+            DeliveryStreamName=STREAM_NAME, Record={"Data": test_data_enc}
+        )
+    elif args.kinesis:
+        response = client.put_record(
+            Data=test_data_enc,
+            PartitionKey="random123",
+            StreamName=STREAM_NAME,
+        )
     logging.info(json.dumps(response, indent=2))
