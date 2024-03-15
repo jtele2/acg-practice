@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 client = boto3.client("firehose", region_name="us-east-1")
 
-STREAM_NAME = "put-s3-j7irn"
+STREAM_NAME = "PUT-S3-acgpractice733"
 
 
 def lambda_handler(event, context):

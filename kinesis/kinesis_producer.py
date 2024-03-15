@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 TODO:
-  - 23FEB: ✅Fix the loop statement so it checks for coordinates and dob keys prior to trimming data
+  - ✅23FEB: Fix the loop statement so it checks for coordinates and dob keys prior to trimming data
 """
 
 import argparse
@@ -62,7 +62,7 @@ if args.kinesis:
 elif args.data_firehose:
     client = boto3.client("firehose", region_name="us-east-1")
 
-STREAM_NAME = "put-s3-j7irn"
+STREAM_NAME = "PUT-S3-acgpractice733"
 
 # Get data records from randomuser.me
 i = 0
