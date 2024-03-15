@@ -77,7 +77,7 @@ while i < tot:
             random_user["location"].get("coordinates") is not None
         ):
             i += 1
-            sleep(1)
+            # sleep(1)
             if not args.verbose:
                 progress.update(1)
             break
