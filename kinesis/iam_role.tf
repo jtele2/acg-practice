@@ -16,8 +16,9 @@ resource "aws_iam_role" "KinesisFirehoseServiceRole-PUT-S3-acgpractice733" {
 }
 POLICY
 
-  managed_policy_arns  = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/service-role/KinesisFirehoseServicePolicy-PUT-S3-acgpractice733"]
-  max_session_duration = "3600"
-  name                 = "KinesisFirehoseServiceRole-PUT-S3-acgpractice733"
-  path                 = "/service-role/"
+  managed_policy_arns   = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/service-role/KinesisFirehoseServicePolicy-PUT-S3-acgpractice733"]
+  max_session_duration  = "3600"
+  name                  = "KinesisFirehoseServiceRole-PUT-S3-acgpractice733"
+  path                  = "/service-role/"
+  force_detach_policies = true
 }
