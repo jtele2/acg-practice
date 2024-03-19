@@ -7,7 +7,6 @@ TODO:
 import argparse
 import json
 import logging
-from time import sleep
 
 import boto3
 import requests
@@ -66,7 +65,7 @@ STREAM_NAME = "PUT-S3-acgpractice733"
 
 # Get data records from randomuser.me
 i = 0
-tot = 1000
+tot = 10000
 if not args.verbose:
     progress = tqdm(colour="GREEN", total=tot)
 while i < tot:
@@ -77,7 +76,6 @@ while i < tot:
             random_user["location"].get("coordinates") is not None
         ):
             i += 1
-            # sleep(1)
             if not args.verbose:
                 progress.update(1)
             break
@@ -97,7 +95,6 @@ while i < tot:
         "longitude": random_user["location"]["coordinates"]["longitude"],
     }
 
-    # test_data = {"name": "foo", "last_name": "bar"}
     # Data Firehose and Kinesis require binary
     test_data_enc = json.dumps(random_user_trim).encode()
     if args.data_firehose:
