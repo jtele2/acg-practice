@@ -19,6 +19,9 @@ provider "aws" {
 module "kinesis" {
   source = "./kinesis"
 }
+module "ml" {
+  source = "./ml"
+}
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Setup an EC2 instance for development (optional, not required)
