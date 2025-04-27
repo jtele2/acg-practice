@@ -1,0 +1,13 @@
+# Basic example of an Ansible inventory file for EC2 instances. You must manually update
+# the IP address of the instance after running `terraform apply`. Instead of having to
+# do this, I'm now using the `terraform` module in Ansible to create the instance and
+# then run the playbook. This way, I don't have to worry about updating the IP address
+# manually.
+learn:
+  hosts:
+    ansible-test:
+      ansible_host: 44.198.178.10 # Update with the new instance IP after `terraform apply`
+      ansible_port: 22
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ~/.ssh/acg_practice
+      ansible_python_interpreter: /usr/bin/python3

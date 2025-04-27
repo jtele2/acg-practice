@@ -1,0 +1,10 @@
+# configuration.yml
+
+# Ansible inventory file configuration for EC2 instances
+ansible:
+  host:
+    ansible_user: ubuntu
+    ansible_ssh_private_key_file: ~/.ssh/acg_practice
+    ansible_python_interpreter: /usr/bin/python3
+    # Retry on SSH connection failure because the instance may not be ready yet
+    ansible_ssh_common_args: -o ConnectionAttempts=60 -o ConnectTimeout=5

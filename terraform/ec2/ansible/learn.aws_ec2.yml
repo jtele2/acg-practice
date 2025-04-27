@@ -1,0 +1,7 @@
+# Ref: https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html
+# To install it, use: ansible-galaxy collection install amazon.aws
+# I stopped using this, but it could become useful in the future. Instead, I'm actually
+# using ansible directly in the terraform module.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1

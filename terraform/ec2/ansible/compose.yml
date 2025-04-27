@@ -1,0 +1,13 @@
+services:
+  ansible-test1:
+    platform: linux/amd64   # 👈 Required for builds on a Mac
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ansible-test1
+    privileged: true          # Required because systemd needs elevated privileges inside the container.
+    ports:
+      - "2222:22"              # Expose SSH from container to localhost:2222
+    hostname: ansible-test1    # Sets the internal hostname (Ansible likes having it consistent).
+    volumes:
+      - ~/.ssh/acg_practice.pub:/tmp/authorized_key:ro

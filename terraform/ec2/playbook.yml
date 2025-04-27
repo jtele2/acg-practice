@@ -1,0 +1,180 @@
+---
+- name: Configure EC2-like Ubuntu
+  hosts: all
+
+  vars:
+    user: ubuntu
+    brew_prefix: /home/linuxbrew/.linuxbrew
+
+  tasks:
+    #####################################################################
+    # Base OS setup
+    #####################################################################
+    - name: Update package index and upgrade everything
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist        # full upgrade
+        cache_valid_time: 3600
+
+    - name: Install base packages and build essentials
+      become: true
+      ansible.builtin.package:
+        name:
+          - zsh
+          - zsh-syntax-highlighting
+          # These required by brew.
+          # REF: https://docs.brew.sh/Homebrew-on-Linux#requirements
+          - git
+          - curl
+          - build-essential
+          - procps
+          - file
+
+    - name: Set default shell to zsh for {{ user }}
+      become: true
+      ansible.builtin.user:
+        name: "{{ user }}"
+        shell: /bin/zsh
+
+    - name: Password-less sudo for {{ user }}
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/99-{{ user }}-nopasswd
+        content: "{{ user }} ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+
+    #####################################################################
+    # Oh-My-Zsh Setup
+    #####################################################################
+    - name: Download oh-my-zsh installer
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: /home/{{ user }}/install-ohmyzsh.sh
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Run oh-my-zsh installer as {{ user }}
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.shell: |
+        ./install-ohmyzsh.sh --unattended
+      args:
+        chdir: /home/{{ user }}
+        creates: /home/{{ user }}/.oh-my-zsh
+
+    - name: Clone zsh-syntax-highlighting repository
+      ansible.builtin.git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: /home/{{ user }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+        accept_hostkey: true
+        force: true
+        version: master
+
+    - name: Clone my custom configs repository
+      ansible.builtin.git:
+        repo: https://github.com/jtele2/configs.git
+        dest: "/home/{{ user }}/configs"  # Updated destination for the configs directory
+        accept_hostkey: true
+        force: true
+        version: main
+
+    - name: Remove existing .zshrc
+      ansible.builtin.file:
+        path: "/home/{{ user }}/.zshrc"
+        state: absent
+
+    - name: Symlink custom zshrc
+      ansible.builtin.file:
+        src: "/home/{{ user }}/configs/.zshrc"
+        dest: "/home/{{ user }}/.zshrc"
+        state: link
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+
+    #####################################################################
+    # Homebrew block  (runs entirely as {{ user }})
+    #####################################################################
+    - name: Install brew and packages
+      become: true
+      become_user: "{{ user }}"
+      tags: brew
+      block:
+        - name: Download brew installer
+          ansible.builtin.get_url:
+            url: https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+            dest: /home/{{ user }}/install-homebrew.sh
+            owner: "{{ user }}"
+            group: "{{ user }}"
+            mode: "0755"
+
+        - name: Run brew installer
+          ansible.builtin.command: ./install-homebrew.sh
+          args:
+            chdir: /home/{{ user }}
+            creates: "{{ brew_prefix }}/bin/brew"
+          environment:
+            HOME: "/home/{{ user }}"
+            USER: "{{ user }}"
+            NONINTERACTIVE: "1"
+            CI: "1"
+
+        - name: Update brew
+          community.general.homebrew:
+            update_homebrew: true
+
+        - name: Install brew packages
+          community.general.homebrew:
+            name:
+              - gcc # Required by 'brew doctor'
+              - tlrc
+              - fzf
+              - kubectl
+              - helm
+              - awscli
+              - uv
+              - docker
+            state: present
+            update_homebrew: false
+
+    - name: Install custom taps
+      community.general.homebrew_tap:
+        name:
+          - hashicorp/tap
+          - fluxcd/tap
+
+
+    - name: Install from custom taps
+      community.general.homebrew:
+        name:
+          - hashicorp/tap/terraform
+          - fluxcd/tap/flux
+        state: present
+      # Force brew to use gcc instead of clang
+      environment:
+        PATH: "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:{{ ansible_env.PATH }}"
+        HOMEBREW_CC: "gcc"
+
+    #####################################################################
+    # Docker CLI plugin path fix  (needs {{ user }} home)
+    #####################################################################
+    - name: Add cliPluginsExtraDirs to Docker config
+      become: true
+      become_user: "{{ user }}"
+      ansible.builtin.blockinfile:
+        path: /home/{{ user }}/.docker/config.json
+        create: true
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: cliPluginsExtraDirs"
+        block: |
+          {
+            "cliPluginsExtraDirs": [
+              "{{ brew_prefix }}/lib/docker/cli-plugins"
+            ]
+          }
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "0644"
