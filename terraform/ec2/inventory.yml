@@ -1,2 +1,3 @@
 ---
 plugin: cloud.terraform.terraform_provider
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
